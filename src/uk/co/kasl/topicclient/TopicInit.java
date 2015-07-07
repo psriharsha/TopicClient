@@ -6,14 +6,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.Timer;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class TopicInit {
 	
@@ -23,11 +35,33 @@ public class TopicInit {
 	public BufferedReader in = null;
 	public PrintWriter out = null;
 	public Vector<JFrame> myFrames = new Vector<JFrame>();
+	private LoginFrame loginFrame;
 	Thread receiveData;
 	Thread sendData;
 	Boolean connect = true;
 	List<String> msgs = new ArrayList<String>();
+	Map<String,String> data = new HashMap<String,String>();
+	Node node;
+	NodeList nodeList = null;
+	MessageType cmd = MessageType.PING;
 	
+	private LoginFrame getLoginFrame(){
+		return loginFrame;
+	}
+	
+	private enum MessageType{
+		LOGIN,
+		PING;
+		
+		public static MessageType getType(String type){
+			MessageType msgType = PING;
+			switch(type){
+			case "login" : msgType = LOGIN; break;
+			case "ping" : msgType = PING; break;
+			}
+			return msgType;
+		}
+	}
 	
 	public String getUsername() {
 		return username;
@@ -85,12 +119,14 @@ public class TopicInit {
 		}
 		sendData = new Thread(){
 			public void run(){
-				while(msgs.size() > 0){
-					String temp = msgs.get(0);
-					out.println(temp);
-					out.flush();
-					System.out.println(temp);
-					msgs.remove(0);
+				while(true){
+					if(msgs.size() > 0){
+						String temp = msgs.get(0);
+						out.println(temp);
+						out.flush();
+						System.out.println(temp);
+						msgs.remove(0);
+					}
 				}
 			}
 		};
@@ -101,10 +137,11 @@ public class TopicInit {
 					try {
 						received = in.readLine();
 						System.out.println(received);
+						parseMessageReceived(received);
 					} catch (IOException e) {
 						continue;
 					}
-				}while(connect);
+				}while(true);
 			}
 		};
 		sendData.setDaemon(true);
@@ -114,7 +151,7 @@ public class TopicInit {
 		new Thread()
 		{
 			public void run(){
-				while(connect){
+				while(true){
 					try {
 						sendData.join();
 						receiveData.join();
@@ -136,7 +173,8 @@ public class TopicInit {
 
 	private void showLoginFrame(String user, String pass) {
 		// TODO Auto-generated method stub
-		new LoginFrame(user,pass).addListener(new LoginFrame.Listener(){
+		loginFrame = new LoginFrame(user,pass);
+		loginFrame.addListener(new LoginFrame.Listener(){
 
 			@Override
 			public void submit(String user, String pass) {
@@ -147,6 +185,56 @@ public class TopicInit {
 			}
 			
 		});
+		addMyFrame(loginFrame);
+	}
+	
+	public synchronized void parseMessageReceived(String message){
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		InputSource is = new InputSource();
+		DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+		    is.setCharacterStream(new StringReader(message));
+			Document doc = builder.parse(is);
+			data = new HashMap<>();
+			node = doc.getDocumentElement();
+			String command = node.getNodeName();
+			cmd = MessageType.getType(command);
+			nodeList = doc.getDocumentElement().getChildNodes();
+			for(int i = 0; i<nodeList.getLength(); i++){
+				node = nodeList.item(i);
+				if(node instanceof Element){
+					data.put(node.getNodeName(), node.getTextContent());
+				}
+			}
+			switch(cmd){
+			case LOGIN: {
+				String result = data.get("result");
+				if(result.equals("success")){
+					System.out.println(result);
+					loginFrame.setVisible(false);
+					/*for(int i = 0; i< myFrames.size(); i++){
+						if(myFrames.get(i) instanceof LoginFrame){
+							myFrames.get(i).dispose();
+							myFrames.remove(i);
+							break;
+						}
+					}*/
+				}else if(result.equals("failed")){
+					loginFrame.setResult("Invalid Username/Password combination.");
+				}
+			} break;
+			}
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void login(){

@@ -26,7 +26,7 @@ public class LoginFrame extends JFrame{
 	
 	public LoginFrame(){
 		JFrame frame = new JFrame("Topic Client");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		addComponentsToFrame(frame.getContentPane());
 		frame.setVisible(true);
 		frame.setResizable(false);
@@ -35,7 +35,7 @@ public class LoginFrame extends JFrame{
 	
 	public LoginFrame(String user, String pass){
 		JFrame frame = new JFrame("Topic Client");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		addComponentsToFrame(frame.getContentPane());
 		frame.setVisible(true);
 		frame.setResizable(false);
@@ -102,7 +102,7 @@ public class LoginFrame extends JFrame{
 		public void submit(String user, String pass);
 	}
 	
-	private void setResult(String text) {
+	public void setResult(String text) {
 		// TODO Auto-generated method stub
 		lblresult.setText(text);
 	}
