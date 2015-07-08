@@ -33,7 +33,6 @@ public class TopicInit {
 	public Socket s = null;
 	public BufferedReader in = null;
 	public PrintWriter out = null;
-	public Vector<JFrame> myFrames = new Vector<JFrame>();
 	private static LoginFrame loginFrame;
 	private static TradeDetail tradeDetail;
 	Thread receiveData;
@@ -155,7 +154,6 @@ public class TopicInit {
 					try {
 						sendData.join();
 						receiveData.join();
-						disposeAllFrames();
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -164,11 +162,6 @@ public class TopicInit {
 				}
 			}
 		}.start();
-	}
-	
-	private void disposeAllFrames(){
-		for(int i= 0; i< myFrames.size(); i++)
-			myFrames.get(i).dispose();
 	}
 
 	private void showLoginFrame(String user, String pass) {
@@ -191,7 +184,6 @@ public class TopicInit {
 			}
 			
 		});
-		addMyFrame(loginFrame);
 	}
 	
 	public synchronized void parseMessageReceived(String message){
@@ -230,7 +222,7 @@ public class TopicInit {
 				Vector<String> oldTopics = new Vector<String>();
 				Iterator<Entry<String, String>> it = data.entrySet().iterator();
 				while(it.hasNext()){
-					Map.Entry pair = (Map.Entry) it.next();
+					Map.Entry<String,String> pair = (Map.Entry<String,String>) it.next();
 					String key = (String) pair.getKey();
 					if(key.contains("name")){
 						oldTopics.add((String) pair.getValue());
@@ -274,11 +266,20 @@ public class TopicInit {
 						sendData.notify();
 					}
 				}
+
+				@Override
+				public void closing() {
+					// TODO Auto-generated method stub
+					System.out.println("Topic Dashboard has been closed");
+					tradeDetail = null;
+					checkFrames();
+				}
 				
 			});
 		}else{
 			tradeDetail.updateTopics(oldTopics);
 		}
+		tradeDetail.setTitle(username + " @ Dashboard");
 	}
 
 	private void getTradeDetail() {
@@ -288,6 +289,13 @@ public class TopicInit {
 			sendData.notify();
 		}
 	}
+	
+	private void checkFrames() {
+		// TODO Auto-generated method stub
+		if(tradeDetail == null){
+			System.exit(0);
+		}
+	}
 
 	public void login(){
 		synchronized(sendData){
@@ -295,10 +303,6 @@ public class TopicInit {
 			msgs.add(log);
 			sendData.notify();
 		}
-	}
-	
-	public void addMyFrame(JFrame frame){
-		myFrames.add(frame);
 	}
 
 	public static void main(String args[]){

@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +36,22 @@ public class TradeDetail extends MyJFrame{
 	
 	public TradeDetail(Vector<String> topics){
 		frame  = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setTitle("Topic Dashboard");
 		addComponentsToFrame(frame.getContentPane(), topics);
 		topics.clear();
 		frame.setResizable(false);
 		frame.setVisible(true);
+		frame.addWindowListener(new WindowAdapter(){
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// TODO Auto-generated method stub
+				super.windowClosing(e);
+				listeners.closing();
+			}
+			
+		});
 		frame.pack();
 	}
 	
@@ -59,7 +70,8 @@ public class TradeDetail extends MyJFrame{
 		GridBagLayout gb = new GridBagLayout();
 		pane.setLayout(gb);
 		topicPanel.setLayout(gb);
-		JLabel topic;
+		addTopics(oldTopics);
+		/*JLabel topic;
 		for(int i=0; i<oldTopics.size(); i++){
 			topic = new JLabel(oldTopics.get(i));
 			System.out.println(oldTopics.get(i));
@@ -68,7 +80,7 @@ public class TradeDetail extends MyJFrame{
 			topicPanel.revalidate();
 			topics.add(topic);
 			oldTopics.remove(i);
-		}		
+		}*/	
 		pane.add(topicPanel, new MyBagConstraints(0, 0, 1, 1));
 		myPane = pane;
 		addTopic(1);
@@ -111,15 +123,13 @@ public class TradeDetail extends MyJFrame{
 				String newTopic = null;
 				newTopic = JOptionPane.showInputDialog(getParent(), "What are you interested in?","New Topic",JOptionPane.PLAIN_MESSAGE);
 				if(newTopic != null && newTopic.trim().length() > 0){
-					JLabel newLabel = new JLabel(newTopic);
+					/*JLabel newLabel = new JLabel(newTopic);
 					topicPanel.add(newLabel, new MyBagConstraints(0, topics.size(), 1, 1));
 					topicPanel.revalidate();
 					topics.add(newLabel);
 					addEventListeners();
-					frame.pack();
-					for(int i = 0; i < listeners.size() ; i++){
-						listeners.get(i).addTopic(newTopic);
-					}
+					frame.pack();*/
+					listeners.addTopic(newTopic);
 					//addTopic(topics.size());
 				}
 			}
@@ -136,9 +146,7 @@ public class TradeDetail extends MyJFrame{
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					// TODO Auto-generated method stub
-					for(int j=0; j< listeners.size(); j++){
-						listeners.get(j).selectTopic(myLabel.getText());
-					}
+					listeners.selectTopic(myLabel.getText());
 				}
 
 				@Override
@@ -179,14 +187,15 @@ public class TradeDetail extends MyJFrame{
 	public interface Listener{
 		public void selectTopic(String topic);
 		public void addTopic(String topic);
+		public void closing();
 	}
 	
 	public void addListener(Listener l){
-		listeners.add(l);
+		listeners = l;
 	}
 	
 	public void removeListener(Listener l){
-		listeners.remove(l);
+		listeners = null;
 	}
 	
 	public static void main(String args[]){
@@ -204,12 +213,19 @@ public class TradeDetail extends MyJFrame{
 				// TODO Auto-generated method stub
 				JOptionPane.showMessageDialog(tradeDetail, "Do you even expect you can make a difference? " + topic);
 			}
+
+			@Override
+			public void closing() {
+				// TODO Auto-generated method stub
+				JOptionPane.showMessageDialog(tradeDetail, "Thanks for having fun! See you later!!");
+			}
 			
 		});
 	}
 	
 	JFrame frame;
-	Vector<Listener> listeners = new Vector<Listener>();
+	//Vector<Listener> listeners = new Vector<Listener>();
+	Listener listeners;
 	Vector<JLabel> topics = new Vector<JLabel>();
 	JButton addTopic;
 	Container myPane;
@@ -217,24 +233,31 @@ public class TradeDetail extends MyJFrame{
 
 	public void updateTopics(Vector<String> oldTopics) {
 		// TODO Auto-generated method stub
-		/*for(int i = 0; i<oldTopics.size(); i++){
-			boolean flag = true;
-			for(int j=0; j<topics.size(); j++){
-				if(oldTopics.get(i).equals(topics.get(j))){
-					flag = false;
-				}
-			}
-			if(flag){
-				JLabel newLabel = new JLabel(oldTopics.get(i));
-				topicPanel.add(newLabel, new MyBagConstraints(0, topics.size(), 1, 1));
-				topicPanel.revalidate();
-				topics.add(newLabel);
-			}
-		}*/
-		if(!oldTopics.containsAll(topics)){
-			topics.clear();
-			oldTopics.copyInto(topics);
-		}
+		topicPanel.removeAll();
+		topicPanel.revalidate();
+		topics.clear();
+		addTopics(oldTopics);
+	}
+
+	private void addTopics(Vector<String> oldTopics) {
+		// TODO Auto-generated method stub
+		JLabel topic;
+		for(int i=0; i<oldTopics.size(); i++){
+			topic = new JLabel(oldTopics.get(i));
+			System.out.println(oldTopics.get(i));
+			topic.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
+			topicPanel.add(topic,new MyBagConstraints(0, i, 1, 1));
+			topicPanel.revalidate();
+			frame.pack();
+			topics.add(topic);
+			addEventListeners();
+		}	
+	}
+	
+	@Override
+	public void setTitle(String title) {
+		// TODO Auto-generated method stub
+		frame.setTitle(title);
 	}
 
 }

@@ -11,4 +11,6 @@ public abstract class MyJFrame extends JFrame{
 	
 	public abstract void disposeFrame();
 	
+	public abstract void setTitle(String title);
+	
 }

@@ -35,7 +35,7 @@ public class LoginFrame extends MyJFrame{
 		frame.setResizable(false);
 		frame.pack();
 	}
-	
+
 	public LoginFrame(String user, String pass){
 		frame = new JFrame("Topic Client");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -128,5 +128,11 @@ public class LoginFrame extends MyJFrame{
 	public void disposeFrame() {
 		// TODO Auto-generated method stub
 		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+	}
+
+	@Override
+	public void setTitle(String title) {
+		// TODO Auto-generated method stub
+		frame.setTitle(title);
 	}
 }
