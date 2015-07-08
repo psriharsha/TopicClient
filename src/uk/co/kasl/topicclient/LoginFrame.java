@@ -27,6 +27,7 @@ public class LoginFrame extends MyJFrame{
 	private static final long serialVersionUID = 1L;
 	
 	public LoginFrame(){
+		super();
 		frame = new JFrame("Topic Client");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		addComponentsToFrame(frame.getContentPane());

@@ -1,21 +1,18 @@
 package uk.co.kasl.topicclient;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import javax.swing.JFrame;
-import javax.swing.Timer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -27,6 +24,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import uk.co.kasl.topicclient.TradeDetail.Listener;
+
 public class TopicInit {
 	
 	public String username;
@@ -35,7 +34,8 @@ public class TopicInit {
 	public BufferedReader in = null;
 	public PrintWriter out = null;
 	public Vector<JFrame> myFrames = new Vector<JFrame>();
-	private LoginFrame loginFrame;
+	private static LoginFrame loginFrame;
+	private static TradeDetail tradeDetail;
 	Thread receiveData;
 	Thread sendData;
 	Boolean connect = true;
@@ -45,18 +45,22 @@ public class TopicInit {
 	NodeList nodeList = null;
 	MessageType cmd = MessageType.PING;
 	
-	private LoginFrame getLoginFrame(){
+	/*private LoginFrame getLoginFrame(){
 		return loginFrame;
-	}
+	}*/
 	
 	private enum MessageType{
 		LOGIN,
+		GET_TOPIC,
+		NEW,
 		PING;
 		
 		public static MessageType getType(String type){
 			MessageType msgType = PING;
 			switch(type){
 			case "login" : msgType = LOGIN; break;
+			case "get" : msgType = GET_TOPIC; break;
+			case "new" : msgType = NEW; break;
 			case "ping" : msgType = PING; break;
 			}
 			return msgType;
@@ -215,17 +219,28 @@ public class TopicInit {
 				if(result.equals("success")){
 					System.out.println(result);
 					loginFrame.disposeFrame();
-					/*for(int i = 0; i< myFrames.size(); i++){
-						if(myFrames.get(i) instanceof LoginFrame){
-							myFrames.get(i).dispose();
-							myFrames.remove(i);
-							break;
-						}
-					}*/
+					getTradeDetail();
 				}else if(result.equals("failed")){
 					loginFrame.setResult("Invalid Username/Password combination.");
 				}
 			} break;
+			case PING:
+				break;
+			case GET_TOPIC:
+				Vector<String> oldTopics = new Vector<String>();
+				Iterator<Entry<String, String>> it = data.entrySet().iterator();
+				while(it.hasNext()){
+					Map.Entry pair = (Map.Entry) it.next();
+					String key = (String) pair.getKey();
+					if(key.contains("name")){
+						oldTopics.add((String) pair.getValue());
+					}
+				}
+				showTradeDetailFrame(oldTopics);
+				oldTopics.clear();
+				break;
+			case NEW:
+				break;
 			}
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
@@ -239,6 +254,41 @@ public class TopicInit {
 		}
 	}
 	
+	private void showTradeDetailFrame(Vector<String> oldTopics) {
+		// TODO Auto-generated method stub
+		if(tradeDetail == null){
+			tradeDetail = new TradeDetail(oldTopics);
+			tradeDetail.addListener(new Listener(){
+
+				@Override
+				public void selectTopic(String topic) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void addTopic(String topic) {
+					// TODO Auto-generated method stub
+					synchronized(sendData){
+						msgs.add("<new><name>" + topic +"</name></new>");
+						sendData.notify();
+					}
+				}
+				
+			});
+		}else{
+			tradeDetail.updateTopics(oldTopics);
+		}
+	}
+
+	private void getTradeDetail() {
+		// TODO Auto-generated method stub
+		synchronized(sendData){
+			msgs.add("<get></get>");
+			sendData.notify();
+		}
+	}
+
 	public void login(){
 		synchronized(sendData){
 			String log = "<login><username>" + username + "</username><password>" + password + "</password></login>";
