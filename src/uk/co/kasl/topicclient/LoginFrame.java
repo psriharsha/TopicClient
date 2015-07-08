@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -16,8 +17,9 @@ import javax.swing.JTextField;
 import javax.swing.RepaintManager;
 
 import uk.co.kasl.topicclient.MyComponents.MyBagConstraints;
+import uk.co.kasl.topicclient.MyComponents.MyJFrame;
 
-public class LoginFrame extends JFrame{
+public class LoginFrame extends MyJFrame{
 
 	/**
 	 * 
@@ -25,7 +27,7 @@ public class LoginFrame extends JFrame{
 	private static final long serialVersionUID = 1L;
 	
 	public LoginFrame(){
-		JFrame frame = new JFrame("Topic Client");
+		frame = new JFrame("Topic Client");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		addComponentsToFrame(frame.getContentPane());
 		frame.setVisible(true);
@@ -34,7 +36,7 @@ public class LoginFrame extends JFrame{
 	}
 	
 	public LoginFrame(String user, String pass){
-		JFrame frame = new JFrame("Topic Client");
+		frame = new JFrame("Topic Client");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		addComponentsToFrame(frame.getContentPane());
 		frame.setVisible(true);
@@ -90,6 +92,12 @@ public class LoginFrame extends JFrame{
 				// TODO Auto-generated method stub
 				loginFrame.setResult("I know you're Joking.");
 			}
+
+			@Override
+			public void cancel() {
+				// TODO Auto-generated method stub
+				System.exit(0);
+			}
 			
 		});
 	}
@@ -100,6 +108,7 @@ public class LoginFrame extends JFrame{
 	
 	public interface Listener{
 		public void submit(String user, String pass);
+		public void cancel();
 	}
 	
 	public void setResult(String text) {
@@ -112,5 +121,11 @@ public class LoginFrame extends JFrame{
 	JPasswordField txtpass;
 	JButton btnsbmt;
 	Vector<Listener> loginListeners = new Vector<Listener>();
+	JFrame frame;
 
+	@Override
+	public void disposeFrame() {
+		// TODO Auto-generated method stub
+		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+	}
 }

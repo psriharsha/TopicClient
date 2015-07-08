@@ -39,7 +39,7 @@ public class TopicInit {
 	Thread receiveData;
 	Thread sendData;
 	Boolean connect = true;
-	List<String> msgs = new ArrayList<String>();
+	Vector<String> msgs = new Vector<String>();
 	Map<String,String> data = new HashMap<String,String>();
 	Node node;
 	NodeList nodeList = null;
@@ -93,39 +93,34 @@ public class TopicInit {
 		setS(socket);
 		showLoginFrame(user, pass);
 		openConnection();
-		Timer timer = new Timer(2000,open);
-		timer.start();
 	}
-	
-	public ActionListener open = new ActionListener(){
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			openConnection();
-			//refreshTrades();
-		}
-		
-	};
 	
 	private synchronized void openConnection() {
 		// TODO Auto-generated method stub
-		try {
-			in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-			out = new PrintWriter(new PrintWriter(s.getOutputStream()));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		sendData = new Thread(){
 			public void run(){
+				synchronized(msgs){
+						try {
+							msgs.wait(1000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				}
 				while(true){
-					if(msgs.size() > 0){
-						String temp = msgs.get(0);
-						out.println(temp);
-						out.flush();
-						System.out.println(temp);
-						msgs.remove(0);
+					synchronized(msgs){
+						try{
+							if(msgs.size() > 0){
+								out = new PrintWriter(new PrintWriter(s.getOutputStream()));
+								String temp = msgs.get(0);
+								out.println(temp);
+								out.flush();
+								System.out.println(temp);
+								msgs.remove(0);
+							}
+						}catch(IOException e){
+							e.printStackTrace();
+						}
 					}
 				}
 			}
@@ -135,6 +130,7 @@ public class TopicInit {
 				String received;
 				do{
 					try {
+						in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 						received = in.readLine();
 						System.out.println(received);
 						parseMessageReceived(received);
@@ -183,6 +179,12 @@ public class TopicInit {
 				setPassword(pass);
 				login();
 			}
+
+			@Override
+			public void cancel() {
+				// TODO Auto-generated method stub
+				System.exit(0);
+			}
 			
 		});
 		addMyFrame(loginFrame);
@@ -212,7 +214,7 @@ public class TopicInit {
 				String result = data.get("result");
 				if(result.equals("success")){
 					System.out.println(result);
-					loginFrame.setVisible(false);
+					loginFrame.disposeFrame();
 					/*for(int i = 0; i< myFrames.size(); i++){
 						if(myFrames.get(i) instanceof LoginFrame){
 							myFrames.get(i).dispose();
@@ -238,8 +240,11 @@ public class TopicInit {
 	}
 	
 	public void login(){
-		String log = "<login><username>" + username + "</username><password>" + password + "</password></login>";
-		msgs.add(log);
+		synchronized(sendData){
+			String log = "<login><username>" + username + "</username><password>" + password + "</password></login>";
+			msgs.add(log);
+			sendData.notify();
+		}
 	}
 	
 	public void addMyFrame(JFrame frame){
