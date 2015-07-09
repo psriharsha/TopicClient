@@ -2,6 +2,8 @@ package uk.co.kasl.topicclient;
 
 import java.awt.Container;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -38,7 +40,7 @@ public class TopicChat extends MyJFrame{
 	}
 	
 	public interface Listener{
-		public void sendMessage();
+		public void sendMessage(String message);
 		public void closing();
 	}
 	
@@ -77,6 +79,15 @@ public class TopicChat extends MyJFrame{
 		pane.add(txtMsg, new MyBagConstraints(0, 1, 0.75, 2));
 		sendMsg = new JButton("Send");
 		pane.add(sendMsg, new MyBagConstraints(2, 1, 0.25, 2));
+		sendMsg.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				listener.sendMessage(txtMsg.getText().trim());
+			}
+			
+		});
 	}
 
 	public TopicChat(){
@@ -88,7 +99,7 @@ public class TopicChat extends MyJFrame{
 		topicChat.addListener(new Listener(){
 
 			@Override
-			public void sendMessage() {
+			public void sendMessage(String message) {
 				// TODO Auto-generated method stub
 				JOptionPane.showMessageDialog(topicChat, "You're an Idiot and you don't understand. :(");
 			}

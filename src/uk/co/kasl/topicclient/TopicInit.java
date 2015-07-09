@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -43,6 +44,7 @@ public class TopicInit {
 	Node node;
 	NodeList nodeList = null;
 	MessageType cmd = MessageType.PING;
+	Map<String,TopicChat> liveTopics = new HashMap<String,TopicChat>();
 	
 	/*private LoginFrame getLoginFrame(){
 		return loginFrame;
@@ -137,7 +139,6 @@ public class TopicInit {
 					try {
 						in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 						received = in.readLine();
-						System.out.println(received);
 						parseMessageReceived(received);
 					} catch (IOException e) {
 						continue;
@@ -188,7 +189,7 @@ public class TopicInit {
 		});
 	}
 	
-	public synchronized void parseMessageReceived(String message){
+	public void parseMessageReceived(String message){
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		InputSource is = new InputSource();
 		DocumentBuilder builder;
@@ -234,7 +235,7 @@ public class TopicInit {
 				oldTopics.clear();
 				break;
 			case SELECT:
-				
+				manageSelect(data);
 				break;
 			case NEW:
 				break;
@@ -251,6 +252,40 @@ public class TopicInit {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	private void manageSelect(Map<String, String> xmlData) {
+		// TODO Auto-generated method stub
+		boolean exist = false;
+		Iterator<Entry<String, TopicChat>> iterate = liveTopics.entrySet().iterator();
+		while(iterate.hasNext()){
+			Map.Entry<String, TopicChat> pair = (Entry<String, TopicChat>) iterate.next();
+			if(pair.getKey().equals(xmlData.get("topic"))){
+				exist = true;
+			}
+		}
+		if(xmlData.get("username").equals(username) && (exist == false)){
+			System.out.println("Time for new Topic");
+				TopicChat chat = new TopicChat();
+				liveTopics.put(xmlData.get("topic"), chat);
+				chat.addListener(new TopicChat.Listener(){
+
+					@Override
+					public void sendMessage(String message) {
+						// TODO Auto-generated method stub
+						JOptionPane.showMessageDialog(chat, "Oru nimisham machha!!");
+					}
+
+					@Override
+					public void closing() {
+						// TODO Auto-generated method stub
+						System.out.println(xmlData.get("topic") + " window has been closed");
+					}
+					
+				});
+				chat.setTitle(getUsername() + " - " + xmlData.get("topic"));
+			}
+	}
+
 	private void showTradeDetailFrame(Vector<String> oldTopics) {
 		// TODO Auto-generated method stub
 		if(tradeDetail == null){
@@ -260,7 +295,10 @@ public class TopicInit {
 				@Override
 				public void selectTopic(String topic) {
 					// TODO Auto-generated method stub
-					
+					synchronized(sendData){
+						msgs.add("<select><username>" + username +"</username><topic>" + topic + "</topic></select>");
+						sendData.notify();
+					}
 				}
 
 				@Override
