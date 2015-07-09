@@ -3,7 +3,6 @@ package uk.co.kasl.topicclient;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,8 +10,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -21,7 +18,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.RepaintManager;
 
 import uk.co.kasl.topicclient.MyComponents.MyBagConstraints;
 import uk.co.kasl.topicclient.MyComponents.MyJFrame;

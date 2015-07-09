@@ -52,6 +52,7 @@ public class TopicInit {
 		LOGIN,
 		GET_TOPIC,
 		NEW,
+		SELECT,
 		PING;
 		
 		public static MessageType getType(String type){
@@ -61,6 +62,7 @@ public class TopicInit {
 			case "get" : msgType = GET_TOPIC; break;
 			case "new" : msgType = NEW; break;
 			case "ping" : msgType = PING; break;
+			case "select" : msgType = SELECT; break;
 			}
 			return msgType;
 		}
@@ -230,6 +232,9 @@ public class TopicInit {
 				}
 				showTradeDetailFrame(oldTopics);
 				oldTopics.clear();
+				break;
+			case SELECT:
+				
 				break;
 			case NEW:
 				break;
