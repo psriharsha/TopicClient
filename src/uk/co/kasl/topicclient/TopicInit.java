@@ -279,11 +279,19 @@ public class TopicInit {
 					public void closing() {
 						// TODO Auto-generated method stub
 						System.out.println(xmlData.get("topic") + " window has been closed");
+						liveTopics.remove(xmlData.get("topic"));
 					}
 					
 				});
 				chat.setTitle(getUsername() + " - " + xmlData.get("topic"));
 			}
+	}
+	
+	private void sendData(String toSend){
+		synchronized(sendData){
+			msgs.add(toSend);
+			sendData.notify();
+		}
 	}
 
 	private void showTradeDetailFrame(Vector<String> oldTopics) {
@@ -295,19 +303,13 @@ public class TopicInit {
 				@Override
 				public void selectTopic(String topic) {
 					// TODO Auto-generated method stub
-					synchronized(sendData){
-						msgs.add("<select><username>" + username +"</username><topic>" + topic + "</topic></select>");
-						sendData.notify();
-					}
+						sendData("<select><username>" + username +"</username><topic>" + topic + "</topic></select>");
 				}
 
 				@Override
 				public void addTopic(String topic) {
 					// TODO Auto-generated method stub
-					synchronized(sendData){
-						msgs.add("<new><name>" + topic +"</name></new>");
-						sendData.notify();
-					}
+						sendData("<new><name>" + topic +"</name></new>");
 				}
 
 				@Override
@@ -327,10 +329,7 @@ public class TopicInit {
 
 	private void getTradeDetail() {
 		// TODO Auto-generated method stub
-		synchronized(sendData){
-			msgs.add("<get></get>");
-			sendData.notify();
-		}
+			sendData("<get></get>");
 	}
 	
 	private void checkFrames() {
@@ -341,11 +340,8 @@ public class TopicInit {
 	}
 
 	public void login(){
-		synchronized(sendData){
 			String log = "<login><username>" + username + "</username><password>" + password + "</password></login>";
-			msgs.add(log);
-			sendData.notify();
-		}
+			sendData(log);
 	}
 
 	public static void main(String args[]){
