@@ -51,11 +51,13 @@ public class TopicInit {
 	}*/
 	
 	private enum MessageType{
-		LOGIN,
-		GET_TOPIC,
+		LOGIN, /* Login */
+		GET_TOPIC, /* Gets all the topics */
 		NEW,
-		SELECT,
-		PING;
+		SELECT, /* When a new Subject has been selected */
+		APPEND, /* When a message has been sent */
+		MESSAGE, /* Message received from server */
+		PING; /* Nothing really happens */
 		
 		public static MessageType getType(String type){
 			MessageType msgType = PING;
@@ -65,6 +67,7 @@ public class TopicInit {
 			case "new" : msgType = NEW; break;
 			case "ping" : msgType = PING; break;
 			case "select" : msgType = SELECT; break;
+			case "append" : msgType = APPEND; break;
 			}
 			return msgType;
 		}
@@ -234,6 +237,9 @@ public class TopicInit {
 				showTradeDetailFrame(oldTopics);
 				oldTopics.clear();
 				break;
+			case APPEND:
+				String res = data.get("result");
+				break;
 			case SELECT:
 				manageSelect(data);
 				break;
@@ -252,7 +258,6 @@ public class TopicInit {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void manageSelect(Map<String, String> xmlData) {
 		// TODO Auto-generated method stub
 		boolean exist = false;
@@ -272,7 +277,9 @@ public class TopicInit {
 					@Override
 					public void sendMessage(String message) {
 						// TODO Auto-generated method stub
-						JOptionPane.showMessageDialog(chat, "Oru nimisham machha!!");
+						//JOptionPane.showMessageDialog(chat, "Oru nimisham machha!!");
+						String toSend = "<append><topic>" + xmlData.get("topic") +"</topic><user>" + username + "</user><msg>" + message + "</msg></append>";
+						sendData(toSend);
 					}
 
 					@Override
@@ -280,6 +287,12 @@ public class TopicInit {
 						// TODO Auto-generated method stub
 						System.out.println(xmlData.get("topic") + " window has been closed");
 						liveTopics.remove(xmlData.get("topic"));
+					}
+
+					@Override
+					public void clearChatMessage() {
+						// TODO Auto-generated method stub
+						chat.clearChatMsg();
 					}
 					
 				});

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -42,6 +43,8 @@ public class TopicChat extends MyJFrame{
 	public interface Listener{
 		public void sendMessage(String message);
 		public void closing();
+		public void clearChatMessage();
+		public void setChat(Vector<Message> chatMessages);
 	}
 	
 	public void addListener(Listener l){
@@ -73,6 +76,7 @@ public class TopicChat extends MyJFrame{
 		// TODO Auto-generated method stub
 		pane.setLayout(new GridBagLayout());
 		textArea = new JTextArea(20,35);
+		textArea.setEnabled(false);
 		scrollPane = new JScrollPane(textArea);
 		pane.add(scrollPane, new MyBagConstraints(0, 0, 1, 4));
 		txtMsg = new JTextField(25);
@@ -88,6 +92,10 @@ public class TopicChat extends MyJFrame{
 			}
 			
 		});
+	}
+	
+	public void clearChatMsg(){
+		txtMsg.setText("");
 	}
 
 	public TopicChat(){
@@ -108,6 +116,18 @@ public class TopicChat extends MyJFrame{
 			public void closing() {
 				// TODO Auto-generated method stub
 				JOptionPane.showMessageDialog(topicChat, "I would have killed you if you didn't close me.");
+			}
+
+			@Override
+			public void clearChatMessage() {
+				// TODO Auto-generated method stub
+				JOptionPane.showMessageDialog(topicChat, "Hahahahaha");
+			}
+
+			@Override
+			public void setChat(Vector<Message> chatMessages) {
+				// TODO Auto-generated method stub
+				JOptionPane.showMessageDialog(topicChat, "You bloody don't have any messages, and you know this already!!");
 			}
 			
 		});
