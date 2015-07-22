@@ -294,6 +294,12 @@ public class TopicInit {
 						// TODO Auto-generated method stub
 						chat.clearChatMsg();
 					}
+
+					@Override
+					public void setChat(Vector<Message> chatMessages) {
+						// TODO Auto-generated method stub
+						chat.setChatHistory(chatMessages);
+					}
 					
 				});
 				chat.setTitle(getUsername() + " - " + xmlData.get("topic"));

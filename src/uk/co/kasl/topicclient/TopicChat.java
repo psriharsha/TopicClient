@@ -29,6 +29,10 @@ public class TopicChat extends MyJFrame{
 	public void setTopicName(String newTopic){
 		topicName = newTopic;
 	}
+	
+	public void setChatHistory(Vector<Message> msgs){
+		
+	}
 
 	@Override
 	public void disposeFrame() {
